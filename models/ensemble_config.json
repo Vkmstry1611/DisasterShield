@@ -1,0 +1,14 @@
+{
+  "distil_dir": "distilbert_rumor_verified_v2",
+  "svm_path": "LinearSVM.joblib",
+  "vectorizer_path": "tfidf_vectorizer.joblib",
+  "meta_model": "meta_ensemble_lr.joblib",
+  "features": [
+    "distil_p_verified",
+    "distil_p_rumor",
+    "svm_p_verified",
+    "zero_shot_p_verified"
+  ],
+  "version": "v2.0",
+  "author": "DisasterShield_Team"
+}
