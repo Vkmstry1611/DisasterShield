@@ -12,7 +12,12 @@ class PostgreSQLDatabase:
         if not self.database_url:
             self.database_url = f"postgresql://{os.getenv('POSTGRES_USER', 'postgres')}:{os.getenv('POSTGRES_PASSWORD', 'password')}@{os.getenv('POSTGRES_HOST', 'localhost')}:{os.getenv('POSTGRES_PORT', '5432')}/{os.getenv('POSTGRES_DB', 'disastershield_db')}"
         
-        self.create_tables()
+        # Only create tables if database is available
+        try:
+            self.create_tables()
+        except Exception as e:
+            logging.warning(f"Database not available during startup: {e}")
+            logging.info("App will continue without database - add PostgreSQL database in Render dashboard")
 
     def get_connection(self):
         """Get PostgreSQL connection"""

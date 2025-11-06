@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Query, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 import joblib
 import numpy as np
 import praw
@@ -41,7 +41,7 @@ class RedditPost(BaseModel):
 
 class UserSignup(BaseModel):
     username: str
-    email: EmailStr
+    email: str
     password: str
     full_name: Optional[str] = None
 
