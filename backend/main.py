@@ -112,9 +112,45 @@ async def startup_tasks():
     try:
         # Try to load SVM model and vectorizer (compatible pair)
         try:
-            ensemble_model = joblib.load("../models/LinearSVM.joblib")  # Use SVM instead of meta-ensemble
-            vectorizer = joblib.load("../models/tfidf_vectorizer.joblib")
-            logging.info("✅ SVM Model and TF-IDF Vectorizer loaded successfully")
+            # Try different model paths for different environments
+            model_paths = [
+                "models/LinearSVM.joblib",      # Cloud deployment (root directory)
+                "../models/LinearSVM.joblib",   # Local development
+                "./models/LinearSVM.joblib"     # Alternative path
+            ]
+            
+            vectorizer_paths = [
+                "models/tfidf_vectorizer.joblib",      # Cloud deployment
+                "../models/tfidf_vectorizer.joblib",   # Local development  
+                "./models/tfidf_vectorizer.joblib"     # Alternative path
+            ]
+            
+            ensemble_model = None
+            vectorizer = None
+            
+            # Try to load SVM model
+            for path in model_paths:
+                try:
+                    ensemble_model = joblib.load(path)
+                    logging.info(f"✅ SVM Model loaded from: {path}")
+                    break
+                except:
+                    continue
+            
+            # Try to load vectorizer
+            for path in vectorizer_paths:
+                try:
+                    vectorizer = joblib.load(path)
+                    logging.info(f"✅ Vectorizer loaded from: {path}")
+                    break
+                except:
+                    continue
+            
+            if ensemble_model and vectorizer:
+                logging.info("✅ Both ML models loaded successfully")
+            else:
+                raise Exception("Could not load required models")
+                
         except Exception as model_error:
             logging.warning(f"⚠️ Could not load ML models: {model_error}")
             logging.info("🔄 Using keyword-based classification")
@@ -323,7 +359,18 @@ def classify_text(text: str) -> Dict[str, float]:
             # Load and use the SVM model instead of the meta-ensemble
             try:
                 import joblib
-                svm_model = joblib.load("../models/LinearSVM.joblib")
+                # Try different paths for SVM model
+                svm_paths = ["models/LinearSVM.joblib", "../models/LinearSVM.joblib", "./models/LinearSVM.joblib"]
+                svm_model = None
+                for path in svm_paths:
+                    try:
+                        svm_model = joblib.load(path)
+                        break
+                    except:
+                        continue
+                
+                if not svm_model:
+                    raise Exception("SVM model not found in any path")
                 
                 # Vectorize the text
                 text_vectorized = vectorizer.transform([text])
@@ -385,9 +432,13 @@ def classify_text_keywords(text: str) -> Dict[str, float]:
         total_matches = verified_score + rumor_score
         
         if total_matches == 0:
+            import random
+            
             # Check for official sources
             if any(source in text_lower for source in ['official', 'government', 'emergency']):
-                return {"label": "verified", "confidence": 0.75}
+                # Vary official source confidence
+                confidence = 0.70 + (random.random() * 0.20)  # 70-90% range
+                return {"label": "verified", "confidence": confidence}
             
             # Check for news-like indicators
             news_indicators = ['breaking', 'reported', 'according to', 'sources say', 'confirmed']
@@ -399,25 +450,36 @@ def classify_text_keywords(text: str) -> Dict[str, float]:
             
             # Dynamic confidence based on content analysis
             if news_score > uncertainty_score:
-                confidence = 0.55 + (news_score * 0.05)  # 55-70% range
-                return {"label": "verified", "confidence": min(0.70, confidence)}
+                base_confidence = 0.55 + (news_score * 0.05)
+                random_variation = random.random() * 0.10  # Add randomness
+                confidence = min(0.85, base_confidence + random_variation)
+                return {"label": "verified", "confidence": confidence}
             else:
-                # Vary rumor confidence based on uncertainty indicators
-                base_confidence = 0.50
+                # Vary rumor confidence with more randomness
+                base_confidence = 0.45 + (random.random() * 0.15)  # 45-60% base
                 if uncertainty_score > 0:
-                    confidence = base_confidence + (uncertainty_score * 0.03)  # 50-65% range
+                    confidence = base_confidence + (uncertainty_score * 0.03)
                 else:
-                    confidence = base_confidence + (len(text_lower.split()) / 1000)  # Longer text = slightly higher confidence
-                return {"label": "rumor", "confidence": min(0.65, max(0.45, confidence))}
+                    confidence = base_confidence + (len(text_lower.split()) / 1000)
+                return {"label": "rumor", "confidence": min(0.75, max(0.40, confidence))}
         
         if verified_score > rumor_score:
-            confidence = min(0.95, 0.65 + (verified_score * 0.1))
+            # More dynamic confidence based on keyword matches and text length
+            base_confidence = 0.60 + (verified_score * 0.08)
+            text_length_bonus = min(0.15, len(text_lower.split()) / 200)
+            confidence = min(0.95, base_confidence + text_length_bonus)
             return {"label": "verified", "confidence": confidence}
         elif rumor_score > verified_score:
-            confidence = min(0.95, 0.65 + (rumor_score * 0.1))
+            # Dynamic rumor confidence
+            base_confidence = 0.55 + (rumor_score * 0.06)
+            uncertainty_penalty = min(0.10, rumor_score * 0.03)
+            confidence = min(0.90, base_confidence + uncertainty_penalty)
             return {"label": "rumor", "confidence": confidence}
         else:
-            return {"label": "rumor", "confidence": 0.55}
+            # Random-ish confidence for neutral cases
+            import random
+            confidence = 0.50 + (random.random() * 0.15)  # 50-65% range
+            return {"label": "rumor", "confidence": confidence}
             
     except Exception as e:
         logging.error(f"Keyword classification error: {e}")

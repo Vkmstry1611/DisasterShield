@@ -1,15 +1,11 @@
 services:
   - type: web
     name: disastershield-backend
-    env: python
+    env: docker
     region: oregon
     plan: free
-    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt"
-    startCommand: "python main.py"
+    dockerfilePath: ./Dockerfile
     healthCheckPath: "/health"
-    envVars:
-      - key: PYTHON_VERSION
-        value: "3.11.9"
 
 databases:
   - name: disastershield-db

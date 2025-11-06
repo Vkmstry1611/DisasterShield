@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Real backend API
-const BASE_URL = 'http://192.168.1.2:8000';
+// Render deployment URL
+const BASE_URL = 'https://disastershield-6zuo.onrender.com';
 
 
 
