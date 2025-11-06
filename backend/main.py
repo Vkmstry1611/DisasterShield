@@ -114,15 +114,15 @@ async def startup_tasks():
         try:
             # Try different model paths for different environments
             model_paths = [
-                "models/LinearSVM.joblib",      # Cloud deployment (root directory)
-                "../models/LinearSVM.joblib",   # Local development
-                "./models/LinearSVM.joblib"     # Alternative path
+                "models/LinearSVM.joblib",      # Local to backend directory
+                "./models/LinearSVM.joblib",    # Alternative local path
+                "../models/LinearSVM.joblib"    # Fallback to root models
             ]
             
             vectorizer_paths = [
-                "models/tfidf_vectorizer.joblib",      # Cloud deployment
-                "../models/tfidf_vectorizer.joblib",   # Local development  
-                "./models/tfidf_vectorizer.joblib"     # Alternative path
+                "models/tfidf_vectorizer.joblib",      # Local to backend directory
+                "./models/tfidf_vectorizer.joblib",    # Alternative local path
+                "../models/tfidf_vectorizer.joblib"    # Fallback to root models
             ]
             
             ensemble_model = None
@@ -360,7 +360,7 @@ def classify_text(text: str) -> Dict[str, float]:
             try:
                 import joblib
                 # Try different paths for SVM model
-                svm_paths = ["models/LinearSVM.joblib", "../models/LinearSVM.joblib", "./models/LinearSVM.joblib"]
+                svm_paths = ["models/LinearSVM.joblib", "./models/LinearSVM.joblib", "../models/LinearSVM.joblib"]
                 svm_model = None
                 for path in svm_paths:
                     try:
