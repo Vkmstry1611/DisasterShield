@@ -21,7 +21,7 @@ from passlib.context import CryptContext
 load_dotenv()
 
 # Simple authentication configuration
-SECRET_KEY = "simple-secret-key"
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "simple-secret-key")
 ALGORITHM = "HS256"
 
 # Pydantic models
