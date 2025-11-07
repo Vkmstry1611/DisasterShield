@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import Colors from '../constants/colors';
 
 const NewsCard = ({ tweet, onPress }) => {
@@ -17,6 +17,14 @@ const NewsCard = ({ tweet, onPress }) => {
           </Text>
         </View>
       </View>
+      
+      {tweet.image_url && (
+        <Image 
+          source={{ uri: tweet.image_url }} 
+          style={styles.image}
+          resizeMode="cover"
+        />
+      )}
       
       <Text style={styles.text} numberOfLines={0}>{tweet.text}</Text>
       
@@ -104,6 +112,13 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
     color: Colors.white,
+  },
+  image: {
+    width: '100%',
+    height: 200,
+    borderRadius: 8,
+    marginBottom: 12,
+    backgroundColor: Colors.background,
   },
   text: {
     fontSize: 15,

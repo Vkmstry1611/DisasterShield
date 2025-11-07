@@ -44,6 +44,7 @@ class PostgreSQLDatabase:
             retweets INTEGER DEFAULT 0,
             replies INTEGER DEFAULT 0,
             category VARCHAR(50) DEFAULT 'general',
+            image_url TEXT,
             processed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             is_active BOOLEAN DEFAULT TRUE
         );
@@ -103,14 +104,15 @@ class PostgreSQLDatabase:
         insert_query = """
         INSERT INTO tweets (tweet_id, text, username, user_followers, tweet_timestamp,
                            classification_label, confidence_score, category, model_version,
-                           likes, retweets, replies)
+                           likes, retweets, replies, image_url)
         VALUES (%(tweet_id)s, %(text)s, %(username)s, %(user_followers)s, %(tweet_timestamp)s,
                 %(classification_label)s, %(confidence_score)s, %(category)s, %(model_version)s,
-                %(likes)s, %(retweets)s, %(replies)s)
+                %(likes)s, %(retweets)s, %(replies)s, %(image_url)s)
         ON CONFLICT (tweet_id) DO UPDATE SET
         classification_label = EXCLUDED.classification_label,
         confidence_score = EXCLUDED.confidence_score,
         category = EXCLUDED.category,
+        image_url = EXCLUDED.image_url,
         processed_at = CURRENT_TIMESTAMP
         """
         
@@ -135,7 +137,7 @@ class PostgreSQLDatabase:
         if category and category != 'all':
             query = """
             SELECT tweet_id, text, username, tweet_timestamp, classification_label,
-                   confidence_score, category, likes, retweets, replies, processed_at
+                   confidence_score, category, likes, retweets, replies, image_url, processed_at
             FROM tweets 
             WHERE classification_label = 'verified' 
             AND confidence_score >= %s 
@@ -148,7 +150,7 @@ class PostgreSQLDatabase:
         else:
             query = """
             SELECT tweet_id, text, username, tweet_timestamp, classification_label,
-                   confidence_score, category, likes, retweets, replies, processed_at
+                   confidence_score, category, likes, retweets, replies, image_url, processed_at
             FROM tweets 
             WHERE classification_label = 'verified' 
             AND confidence_score >= %s 
@@ -163,7 +165,7 @@ class PostgreSQLDatabase:
         if category and category != 'all':
             query = """
             SELECT tweet_id, text, username, tweet_timestamp, classification_label,
-                   confidence_score, category, likes, retweets, replies, processed_at
+                   confidence_score, category, likes, retweets, replies, image_url, processed_at
             FROM tweets 
             WHERE classification_label = 'rumor' 
             AND confidence_score >= %s 
@@ -176,7 +178,7 @@ class PostgreSQLDatabase:
         else:
             query = """
             SELECT tweet_id, text, username, tweet_timestamp, classification_label,
-                   confidence_score, category, likes, retweets, replies, processed_at
+                   confidence_score, category, likes, retweets, replies, image_url, processed_at
             FROM tweets 
             WHERE classification_label = 'rumor' 
             AND confidence_score >= %s 
@@ -191,7 +193,7 @@ class PostgreSQLDatabase:
         if category and category != 'all':
             query = """
             SELECT tweet_id, text, username, tweet_timestamp, classification_label,
-                   confidence_score, category, likes, retweets, replies, processed_at
+                   confidence_score, category, likes, retweets, replies, image_url, processed_at
             FROM tweets 
             WHERE is_active = TRUE AND category = %s
             ORDER BY tweet_timestamp DESC 
@@ -201,7 +203,7 @@ class PostgreSQLDatabase:
         else:
             query = """
             SELECT tweet_id, text, username, tweet_timestamp, classification_label,
-                   confidence_score, category, likes, retweets, replies, processed_at
+                   confidence_score, category, likes, retweets, replies, image_url, processed_at
             FROM tweets 
             WHERE is_active = TRUE
             ORDER BY tweet_timestamp DESC 

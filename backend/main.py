@@ -38,6 +38,7 @@ class RedditPost(BaseModel):
     retweet_count: int = 0
     like_count: int = 0
     category: str = "general"
+    image_url: Optional[str] = None
 
 class UserSignup(BaseModel):
     username: str
@@ -530,6 +531,19 @@ async def fetch_and_classify_reddit_posts():
                         
                         # Detect disaster category
                         category = detect_disaster_category(cleaned_text)
+                        
+                        # Extract image URL from Reddit post
+                        image_url = None
+                        try:
+                            if hasattr(post, 'preview') and 'images' in post.preview:
+                                # Get the highest resolution image
+                                image_url = post.preview['images'][0]['source']['url']
+                            elif hasattr(post, 'thumbnail') and post.thumbnail and post.thumbnail.startswith('http'):
+                                image_url = post.thumbnail
+                            elif post.url and any(post.url.endswith(ext) for ext in ['.jpg', '.jpeg', '.png', '.gif']):
+                                image_url = post.url
+                        except:
+                            pass  # No image available
                             
                         post_data = {
                             "tweet_id": f"reddit_{post.id}",
@@ -540,7 +554,8 @@ async def fetch_and_classify_reddit_posts():
                             "likes": post.score,
                             "retweets": 0,  # Reddit doesn't have retweets
                             "replies": post.num_comments,
-                            "category": category
+                            "category": category,
+                            "image_url": image_url
                         }
                         all_posts.append(post_data)
                         
@@ -635,7 +650,8 @@ async def get_disaster_news(
                 confidence=float(tweet["confidence_score"]),
                 retweet_count=0,  # Remove retweet count for Reddit
                 like_count=tweet["likes"],
-                category=tweet.get("category", "general")
+                category=tweet.get("category", "general"),
+                image_url=tweet.get("image_url")
             )
             classified_posts.append(classified_post)
     
@@ -662,7 +678,8 @@ async def get_verified_news(
             confidence=float(tweet["confidence_score"]),
             retweet_count=0,  # Remove retweet count for Reddit
             like_count=tweet["likes"],
-            category=tweet.get("category", "general")
+            category=tweet.get("category", "general"),
+            image_url=tweet.get("image_url")
         )
         for tweet in tweets
     ]
@@ -688,7 +705,8 @@ async def get_rumors(
             confidence=float(tweet["confidence_score"]),
             retweet_count=0,  # Remove retweet count for Reddit
             like_count=tweet["likes"],
-            category=tweet.get("category", "general")
+            category=tweet.get("category", "general"),
+            image_url=tweet.get("image_url")
         )
         for tweet in tweets
     ]
