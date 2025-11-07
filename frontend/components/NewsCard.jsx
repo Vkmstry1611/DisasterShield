@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Colors from '../constants/colors';
 
-const TweetCard = ({ tweet, onPress }) => {
+const NewsCard = ({ tweet, onPress }) => {
   const isVerified = tweet.label === 'verified';
   const confidenceColor = getConfidenceColor(tweet.confidence);
   const confidencePercentage = Math.round(tweet.confidence * 100);
@@ -141,4 +141,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default TweetCard;
+export default NewsCard;

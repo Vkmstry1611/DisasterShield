@@ -41,6 +41,14 @@ export default function HomeScreen() {
   useEffect(() => {
     loadDashboardStats();
     checkLoginStatus();
+
+    // Auto-refresh every 60 minutes
+    const refreshInterval = setInterval(() => {
+      console.log('Auto-refreshing dashboard stats...');
+      loadDashboardStats();
+    }, 60 * 60 * 1000); // 60 minutes in milliseconds
+
+    return () => clearInterval(refreshInterval);
   }, []);
 
   // Check login status when screen comes into focus

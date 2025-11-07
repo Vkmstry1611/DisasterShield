@@ -4,7 +4,7 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 
 import Colors from '../../constants/colors';
 import { disasterAPI } from '../../services/api';
-import TweetCard from '../../components/TweetCard';
+import NewsCard from '../../components/NewsCard';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
 export default function NewsScreen() {
@@ -27,6 +27,14 @@ export default function NewsScreen() {
   useEffect(() => {
     loadCategories();
     loadNews();
+
+    // Auto-refresh every 60 minutes
+    const refreshInterval = setInterval(() => {
+      console.log('Auto-refreshing news data...');
+      loadNews();
+    }, 60 * 60 * 1000); // 60 minutes in milliseconds
+
+    return () => clearInterval(refreshInterval);
   }, []);
 
   useEffect(() => {
@@ -218,7 +226,7 @@ export default function NewsScreen() {
             </View>
           ) : (
             currentNews.map((tweet) => (
-              <TweetCard
+              <NewsCard
                 key={tweet.id}
                 tweet={tweet}
                 onPress={handleTweetPress}
