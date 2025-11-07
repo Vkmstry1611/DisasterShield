@@ -111,6 +111,14 @@ async def hourly_update_task():
 async def startup_tasks():
     global ensemble_model, vectorizer, distilbert_model, background_task
     try:
+        # Run database migration for image_url column
+        try:
+            from add_image_column import add_image_column
+            add_image_column()
+        except Exception as migration_error:
+            logging.warning(f"Migration skipped or already applied: {migration_error}")
+        
+
         # Try to load SVM model and vectorizer (compatible pair)
         try:
             # Try different model paths for different environments
